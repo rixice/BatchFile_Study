@@ -1,0 +1,62 @@
+@REM schtasks /create /sc <scheduletype> /tn <taskname> /tr <taskrun> 
+@REM [/s <computer> [/u [<domain>\]<user> [/p <password>]]] 
+@REM [/ru {[<domain>\]<user> | system}] [/rp <password>] [/mo <modifier>] 
+@REM [/d <day>[,<day>...] | *] [/m <month>[,<month>...]] [/i <idletime>] [/st <starttime>] [/ri <interval>] 
+@REM [{/et <endtime> | /du <duration>} [/k]] [/sd <startdate>] [/ed <enddate>] [/it] [/z] [/f]
+
+详情见：https://docs.microsoft.com/zh-cn/windows-server/administration/windows-commands/schtasks
+
+示例:
+    ==> 在远程机器 "ABC" 上创建计划任务 "doc"，
+        该机器每小时在 "runasuser" 用户下运行 notepad.exe。
+
+        SCHTASKS /Create /S ABC /U user /P password /RU runasuser
+                 /RP runaspassword /SC HOURLY /TN doc /TR notepad
+
+    ==> 在远程机器 "ABC" 上创建计划任务 "accountant"，
+        在指定的开始日期和结束日期之间的开始时间和结束时间内，
+        每隔五分钟运行 calc.exe。
+
+        SCHTASKS /Create /S ABC /U domain\user /P password /SC MINUTE
+                 /MO 5 /TN accountant /TR calc.exe /ST 12:00 /ET 14:00
+                 /SD 06/06/2006 /ED 06/06/2006 /RU runasuser /RP userpassword
+
+    ==> 创建计划任务 "gametime"，在每月的第一个星期天
+        运行“空当接龙”。
+
+        SCHTASKS /Create /SC MONTHLY /MO first /D SUN /TN gametime
+                 /TR c:\windows\system32\freecell
+
+    ==> 在远程机器 "ABC" 创建计划任务 "report"，
+        每个星期运行 notepad.exe。
+
+        SCHTASKS /Create /S ABC /U user /P password /RU runasuser
+                 /RP runaspassword /SC WEEKLY /TN report /TR notepad.exe
+
+    ==> 在远程机器 "ABC" 创建计划任务 "logtracker"，
+        每隔五分钟从指定的开始时间到无结束时间，
+        运行 notepad.exe。将提示输入 /RP
+        密码。
+
+        SCHTASKS /Create /S ABC /U domain\user /P password /SC MINUTE
+                 /MO 5 /TN logtracker
+                 /TR c:\windows\system32\notepad.exe /ST 18:30
+                 /RU runasuser /RP
+
+    ==> 创建计划任务 "gaming"，每天从 12:00 点开始到
+        14:00 点自动结束，运行 freecell.exe。
+
+        SCHTASKS /Create /SC DAILY /TN gaming /TR c:\freecell /ST 12:00
+                 /ET 14:00 /K
+    ==> 创建计划任务“EventLog”以开始运行 wevtvwr.msc
+        只要在“系统”通道中发布事件 101
+
+        SCHTASKS /Create /TN EventLog /TR wevtvwr.msc /SC ONEVENT
+                 /EC System /MO *[System/EventID=101]
+    ==> 文件路径中可以加入空格，但需要加上两组引号，
+        一组引号用于 CMD.EXE，另一组用于 SchTasks.exe。用于 CMD
+        的外部引号必须是一对双引号；内部引号可以是一对单引号或
+        一对转义双引号:
+        SCHTASKS /Create
+           /tr "'c:\program files\internet explorer\iexplorer.exe'
+           \"c:\log data\today.xml\"" ...
